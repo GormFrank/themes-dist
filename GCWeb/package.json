@@ -1,7 +1,7 @@
 {
-  "name": "gcweb",
-  "version": "9.1.0",
-  "description": "gcweb theme",
+  "name": "gcweb-compiled",
+  "version": "1.0.0",
+  "description": "gcweb theme compiled",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wet-boew/themes-cdn.git"
