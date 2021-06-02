@@ -112,13 +112,13 @@ var $document = wb.doc,
 			h1,
 			$elm;
 
-		if ( elm ) {
+		if ( elm && event.currentTarget === event.target ) {
 			$elm = $( elm );
 			$h1 = $( "h1", $elm );
 			h1 = $h1.get( 0 );
 
 			// Add Subway H1 to skip links only once and if it is a sub-page
-			if ( h1 && event.currentTarget === event.target ) {
+			if ( h1 ) {
 
 				// Ensure the element have an ID
 				h1.id = h1.id || wb.getId();

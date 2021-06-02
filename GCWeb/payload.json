@@ -81,18 +81,18 @@
   },
   "@/js/theme.js": {
     "hashes": {
-      "sha256": "gxUrZ5m55y/TaYQllLjvffgm8noz6Tssh/Vtl3TUf7E=",
-      "sha512": "jwCuv0WpUg1CbsxC/2Jt8xeHL2sZfk/BYLq0jt4vCdl/OzG5CjhWr332ltGD/wHPfBmy9YfbkLnTIwtOgB+mWA=="
+      "sha256": "YqthlK2OcHiZ0dyeHeN5o3Y/dMNwPJBEeG5EDM+ZzUw=",
+      "sha512": "7QZMCSnXtKEEXHQdQ3Bnmr8MXtxZrObD3JweG3w8NdEtXRgRMk3GeKnb/uPcpg4wLRZ6oTHv7lejsEqes/1cEQ=="
     },
-    "integrity": "sha256-gxUrZ5m55y/TaYQllLjvffgm8noz6Tssh/Vtl3TUf7E= sha512-jwCuv0WpUg1CbsxC/2Jt8xeHL2sZfk/BYLq0jt4vCdl/OzG5CjhWr332ltGD/wHPfBmy9YfbkLnTIwtOgB+mWA==",
+    "integrity": "sha256-YqthlK2OcHiZ0dyeHeN5o3Y/dMNwPJBEeG5EDM+ZzUw= sha512-7QZMCSnXtKEEXHQdQ3Bnmr8MXtxZrObD3JweG3w8NdEtXRgRMk3GeKnb/uPcpg4wLRZ6oTHv7lejsEqes/1cEQ==",
     "path": "/js/theme.js"
   },
   "@/js/theme.min.js": {
     "hashes": {
-      "sha256": "b8ySHwx2BU0TWrJpq3dogSTiKKnwyvPMfXjXipBaHo8=",
-      "sha512": "DCPv/POkgekmnZehOc+EBWXvSYMo5mTvFz7iUrlUT2dMBqOv98z8pRQXnnggWZt1SruKXZdv82/XWVWbqxfp5A=="
+      "sha256": "zHs/CC8CewszL0Tph3ktH7r/aOF7Biuj/EJLSFf4/bM=",
+      "sha512": "wTb2R8o1+++PQJspthAffzWDxE8tfxQKM0IDYSVHKmEogI4NdhjBjMNTzFLo+QRTc+2C8WqYvOkbMSnWOyt1nw=="
     },
-    "integrity": "sha256-b8ySHwx2BU0TWrJpq3dogSTiKKnwyvPMfXjXipBaHo8= sha512-DCPv/POkgekmnZehOc+EBWXvSYMo5mTvFz7iUrlUT2dMBqOv98z8pRQXnnggWZt1SruKXZdv82/XWVWbqxfp5A==",
+    "integrity": "sha256-zHs/CC8CewszL0Tph3ktH7r/aOF7Biuj/EJLSFf4/bM= sha512-wTb2R8o1+++PQJspthAffzWDxE8tfxQKM0IDYSVHKmEogI4NdhjBjMNTzFLo+QRTc+2C8WqYvOkbMSnWOyt1nw==",
     "path": "/js/theme.min.js"
   },
   "@/méli-mélo/2021-03-trial.css": {
