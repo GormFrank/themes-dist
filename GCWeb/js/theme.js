@@ -109,10 +109,22 @@ var $document = wb.doc,
 		// returns DOM object = proceed with init
 		// returns undefined = do not proceed with init (e.g., already initialized)
 		var elm = wb.init( event, componentName, selector ),
+			h1,
 			$elm;
 
 		if ( elm ) {
 			$elm = $( elm );
+			$h1 = $( "h1", $elm );
+			h1 = $h1.get( 0 );
+
+			// Add Subway H1 to skip links only once and if it is a sub-page
+			if ( h1 && event.currentTarget === event.target ) {
+
+				// Ensure the element have an ID
+				h1.id = h1.id || wb.getId();
+
+				wb.addSkipLink( wb.i18n( "skip-prefix" ) + " " + h1.textContent, { href: "#" + h1.id } );
+			}
 
 			// trigger resizing
 			onResize( $elm );
@@ -166,9 +178,8 @@ var $document = wb.doc,
 	 * @param {jQuery DOM element} $elm Element targetted by this plugin, which is the nav
 	 */
 	initDesktop = function( $elm ) {
-		$h1 = $( "h1", $elm );
 		$h2 = $( "<h2 class='h3 hidden-xs visible-md visible-lg mrgn-tp-0'>Sections</h2>" );
-		$h1Copy = $( "<p class='gc-subway-h1' aria-hidden='true'>" + $h1.text() + "</p>" );
+		$h1Copy = $( "<div class='gc-subway-h1' aria-hidden='true'>" + $h1.text() + "</div>" );
 		$( "ul", $elm ).first().wrap( "<div class='gc-subway-menu-nav'></div>" );
 		$menu = $( ".gc-subway-menu-nav", $elm );
 		$elm.nextUntil( ".pagedetails, .gc-subway-section-end" ).wrapAll( "<section class='provisional " + mainClass + "'>" );
@@ -601,7 +612,7 @@ var $document = wb.doc,
 			// Need to add the first row, because the header are not included in the list of rows returned by the datatable plugin.
 			for ( j = 0; j < columns_len; j = j + 1 ) {
 				cellCSVText = rows[ 0 ].cells[ j ].textContent;
-				cellCSVText = cellCSVText.replace( /\"/g, "\"\"" );
+				cellCSVText = cellCSVText.replace( /"/g, "\"\"" );
 				if ( j ) {
 					csvText = csvText + ",\"" + cellCSVText + "\"";
 				} else {
@@ -631,7 +642,7 @@ var $document = wb.doc,
 				} else {
 					cellCSVText = rows[ i ].cells[ j ].textContent;
 				}
-				cellCSVText = cellCSVText.replace( /\"/g, "\"\"" );
+				cellCSVText = cellCSVText.replace( /"/g, "\"\"" );
 				cellCSVText = cellCSVText + "\"";
 				if ( j ) {
 					csvText = csvText + ",\"" + cellCSVText;
@@ -732,8 +743,11 @@ var $document = wb.doc,
 					cValueParsed = pattern.exec( cValue );
 
 					// Fall back on default if no match found
-					cValueParsed = !!cValueParsed ? cValueParsed : defaultValue;
-				} catch ( e ) { }
+					cValueParsed = cValueParsed ? cValueParsed : defaultValue;
+				} catch ( e ) {
+
+					// continue regardless of error
+				}
 			} else if ( !cValueParsed && !!defaultValue && !cValue ) {
 				cValueParsed = defaultValue;
 			}
@@ -2204,11 +2218,12 @@ var componentName = "wb-data-json",
 			if ( a === null ) {
 				return b === null;
 			}
+			var i, l;
 			if ( $.isArray( a ) ) {
 				if (  $.isArray( b ) || a.length !== b.length ) {
 					return false;
 				}
-				for ( var i = 0, l = a.length; i < l; i++ ) {
+				for ( i = 0, l = a.length; i < l; i++ ) {
 					if ( !_equalsJSON( a[ i ], b[ i ] ) ) {
 						return false;
 					}
@@ -2220,7 +2235,7 @@ var componentName = "wb-data-json",
 			if ( _objectKeys( a ).length !== bLength ) {
 				return false;
 			}
-			for ( var i = 0; i < bLength; i++ ) {
+			for ( i = 0; i < bLength; i++ ) {
 				if ( !_equalsJSON( a[ i ], b[ i ] ) ) {
 					return false;
 				}
@@ -2231,8 +2246,9 @@ var componentName = "wb-data-json",
 		}
 	},
 	_objectKeys = function( obj ) {
+		var keys;
 		if ( $.isArray( obj ) ) {
-			var keys = new Array( obj.length );
+			keys = new Array( obj.length );
 			for ( var k = 0; k < keys.length; k++ ) {
 				keys[ k ] = "" + k;
 			}
@@ -2241,9 +2257,9 @@ var componentName = "wb-data-json",
 		if ( Object.keys ) {
 			return Object.keys( obj );
 		}
-		var keys = [];
+		keys = [];
 		for ( var i in obj ) {
-			if ( obj.hasOwnProperty( i ) ) {
+			if ( Object.prototype.hasOwnProperty.call( obj, i ) ) {
 				keys.push( i );
 			}
 		}
@@ -2906,7 +2922,7 @@ var componentName = "wb-fieldflow",
 				label: labelTxt,
 				lblselector: labelSelector,
 				defaultselectedlabel: data.defaultselectedlabel,
-				required: !!!data.isoptional,
+				required: !data.isoptional,
 				noreqlabel: data.noreqlabel,
 				items: $items,
 				inline: data.inline
@@ -2919,7 +2935,7 @@ var componentName = "wb-fieldflow",
 			actions = data.actions,
 			lblselector = data.lblselector,
 			isReq = !!data.required,
-			useReqLabel = !!!data.noreqlabel,
+			useReqLabel = !data.noreqlabel,
 			items = data.items,
 			elm = event.target,
 			$elm = $( elm ),
@@ -2958,7 +2974,7 @@ var componentName = "wb-fieldflow",
 		}
 		if ( attributes && typeof attributes === "object" ) {
 			for ( i in attributes ) {
-				if ( attributes.hasOwnProperty( i ) ) {
+				if ( Object.prototype.hasOwnProperty.call( attributes, i ) ) {
 					selectOut += " " + i + "='" + attributes[ i ] + "'";
 				}
 			}
@@ -3013,7 +3029,7 @@ var componentName = "wb-fieldflow",
 			actions = data.actions,
 			lblselector = data.lblselector,
 			isReq = !!data.required,
-			useReqLabel = !!!data.noreqlabel,
+			useReqLabel = !data.noreqlabel,
 			items = data.items,
 			elm = event.target,
 			$elm = $( elm ),
@@ -3034,7 +3050,7 @@ var componentName = "wb-fieldflow",
 
 		if ( attributes && typeof attributes === "object" ) {
 			for ( i in attributes ) {
-				if ( attributes.hasOwnProperty( i ) ) {
+				if ( Object.prototype.hasOwnProperty.call( attributes, i ) ) {
 					fieldsetHTML += " " + i + "='" + attributes[ i ] + "'";
 				}
 			}
@@ -4041,11 +4057,12 @@ var componentName = "wb-jsonmanager",
 			if ( a === null ) {
 				return b === null;
 			}
+			var i, l;
 			if ( $.isArray( a ) ) {
 				if (  $.isArray( b ) || a.length !== b.length ) {
 					return false;
 				}
-				for ( var i = 0, l = a.length; i < l; i++ ) {
+				for ( i = 0, l = a.length; i < l; i++ ) {
 					if ( !_equalsJSON( a[ i ], b[ i ] ) ) {
 						return false;
 					}
@@ -4057,7 +4074,7 @@ var componentName = "wb-jsonmanager",
 			if ( _objectKeys( a ).length !== bLength ) {
 				return false;
 			}
-			for ( var i = 0; i < bLength; i++ ) {
+			for ( i = 0; i < bLength; i++ ) {
 				if ( !_equalsJSON( a[ i ], b[ i ] ) ) {
 					return false;
 				}
@@ -4068,8 +4085,9 @@ var componentName = "wb-jsonmanager",
 		}
 	},
 	_objectKeys = function( obj ) {
+		var keys;
 		if ( $.isArray( obj ) ) {
-			var keys = new Array( obj.length );
+			keys = new Array( obj.length );
 			for ( var k = 0; k < keys.length; k++ ) {
 				keys[ k ] = "" + k;
 			}
@@ -4078,9 +4096,9 @@ var componentName = "wb-jsonmanager",
 		if ( Object.keys ) {
 			return Object.keys( obj );
 		}
-		var keys = [];
+		keys = [];
 		for ( var i in obj ) {
-			if ( obj.hasOwnProperty( i ) ) {
+			if ( Object.prototype.hasOwnProperty.call( obj, i ) ) {
 				keys.push( i );
 			}
 		}
@@ -4428,6 +4446,284 @@ wb.add( selector );
 
 } )( jQuery, window, wb );
 
+/*
+ * Web Experience Toolkit (WET) / Boîte à outils de l'expérience Web (BOEW)
+ * wet-boew.github.io/wet-boew/License-en.html / wet-boew.github.io/wet-boew/Licence-fr.html
+ *
+ * @author: duboisp
+ * @description: Load suggestions from an array of string in a JSON file.
+ *
+ */
+( function( $, document, wb ) {
+"use strict";
+
+var $document = wb.doc,
+	componentName = "wb-suggest",
+	selector = "[data-" + componentName + "]",
+	initEvent = "wb-init." + componentName,
+	jsonFetched = "json-fetched.wb",
+	wait,
+	waitInterval = 250, // In-bettween typing delay before refreshing the suggested list.
+	maxWaitLoading = 5, // Number of time of waitInterval the plugin are allow wait for getting JSON suggestions
+
+	// Remove accent and normalize the string
+	//
+	// str: String to be normalized
+	// return: A normalized string with no accent
+	//
+	unAccent = function( str ) {
+		return str.normalize( "NFD" ).replace( /[\u0300-\u036f]/g, "" );
+	},
+
+	// Remove children of an element except template element
+	//
+	// this: element that need to emptied
+	//
+	emptyExceptTemplate = function() {
+		var elm,
+			children = this.children,
+			i;
+
+		for ( i = children.length - 1; i > 0; i = i - 1 ) {
+			elm = children[ i ];
+			if ( elm.nodeType === 1 && elm.nodeName !== "TEMPLATE" ) {
+				this.removeChild( elm );
+			}
+
+		}
+	},
+
+	// Add suggested options to the datalist
+	//
+	// this: datalist instance
+	// filter: filter items that match the suggestion
+	// limti: (for overwride) limit number of result
+	// attSuggestions: (for overwride) Array of string with suggestion
+	//
+	addDataListOptions = function( filter, limit, attrSuggestions ) {
+		var suggestions = attrSuggestions || JSON.parse( this.dataset.wbSuggestions || [] ),
+			filterType = this.dataset.wbFilterType || "any",
+			filterRegExp,
+			lenSuggestions = suggestions.length,
+			idx, suggestion, suggestionNorm,
+			clone, option,
+			optionAddedUnAccent = [],
+			currentOptions = this.childNodes,
+			j, j_cache, j_len = currentOptions.length - 1,
+			currentOptionValue,
+			$input = $( "[list=" + this.id + "]" ),
+			input = $input.get( 0 );
+
+		if ( !suggestions.length && maxWaitLoading ) {
+			maxWaitLoading = maxWaitLoading - 1;
+			if ( wait ) {
+				clearTimeout( wait );
+			}
+			wait = setTimeout( addDataListOptions( filter, limit, attrSuggestions ), waitInterval );
+		}
+		if ( !limit ) {
+			limit = parseInt( this.dataset.wbLimit || lenSuggestions );
+		}
+
+		// Set the filter type
+		if ( filter ) {
+
+			switch ( filterType ) {
+			case "startWith":
+				filter = "^" + filter;
+				break;
+			case "word":
+				filter = "^" + filter + "|\\s" + filter;
+				break;
+			case "any":
+			default:
+
+				// Keep the filter as is for the regular expression check
+				break;
+			}
+
+			filterRegExp = new RegExp( filter, "i" );
+		}
+
+		if ( !filter || filter.length < 2 ) {
+			emptyExceptTemplate.call( this );
+			currentOptions = [];
+		} else {
+
+			// Remove existing option that don't match
+			for ( j = j_len; j !== 0; j = j - 1 ) {
+
+				j_cache = currentOptions[ j ];
+
+				if ( j_cache.nodeType === 1 && j_cache.nodeName === "OPTION" ) {
+
+					currentOptionValue = j_cache.getAttribute( "value" );
+
+					if ( currentOptionValue && currentOptionValue.match( filterRegExp ) ) {
+						optionAddedUnAccent.push( unAccent( currentOptionValue ) );
+					} else {
+						this.removeChild( j_cache );
+					}
+				}
+			}
+		}
+
+		// Get the template
+		var template = this.querySelector( "template" );
+
+		// IE11 support
+		// Polyfil the template, like if added after the polyfill or this a sub-template in a template container that wasn't polyfill
+		// FYI - The polyfill is loaded from the data-json plugin
+		if ( template && !template.content ) {
+			wb.tmplPolyfill( template );
+		}
+
+		for ( idx = 0; idx < lenSuggestions && optionAddedUnAccent.length < limit; idx += 1 ) {
+			suggestion = suggestions[ idx ];
+			suggestionNorm = unAccent( suggestion ); // To ensure to don't have duplicate entry in the suggestion
+
+			if ( optionAddedUnAccent.indexOf( suggestionNorm ) === -1 && ( !filter || suggestion.match( filterRegExp ) ) ) {
+
+				optionAddedUnAccent.push( suggestionNorm );
+
+				if ( template ) {
+					clone = template.content.cloneNode( true );
+					option = clone.querySelector( "option" );
+				} else {
+					clone = document.createDocumentFragment();
+					option = document.createElement( "OPTION" );
+					clone.appendChild( option );
+				}
+
+				option.setAttribute( "label", suggestion );
+				option.setAttribute( "value", suggestion );
+
+				this.appendChild( clone );
+			}
+		}
+
+		// For the datalist polyfill like IE11
+		$input.trigger( "wb-update.wb-datalist" );
+
+		// To show suggestion on IE11, do not seem to conflict with other browser
+		input.value = input.value; // eslint-disable-line
+	},
+
+	// Initiate suggestion from received JSON file
+	//
+	// suggestion: JSON string array that was fetched
+	// this: the datalist reference
+	initSuggestion = function( suggestions ) {
+
+		// Attach the JSON list to the datalist element
+		this.dataset.wbSuggestions = JSON.stringify( suggestions );
+
+		// Remove the reference as it not needed anymore
+		delete this.dataset.wbSuggest;
+
+		// Add the suggested options
+		addDataListOptions.call( this, document.querySelector( "[list=" + this.id + "]" ).value );
+	},
+
+	inputFocus = function( event ) {
+
+		var target = event.target,
+			datalist = document.getElementById( target.getAttribute( "list" ) );
+
+		// IE11 add support for string normalization
+		Modernizr.load( {
+			test: Modernizr.stringnormalize,
+			nope: [
+				"site!deps/unorm" + wb.getMode() + ".js"
+			]
+		} );
+
+		// Load the JSON file
+		$( datalist ).trigger( {
+			type: "json-fetch.wb",
+			fetch: {
+				url: datalist.dataset.wbSuggest
+			}
+		} );
+	},
+
+	inputChange = function( event ) {
+		var target = event.target,
+			datalistElm = document.getElementById( target.getAttribute( "list" ) ),
+			query = event.target.value,
+			which = event.which;
+
+		if ( wait ) {
+			clearTimeout( wait );
+		}
+
+		switch ( event.type ) {
+		case "change":
+			wait = setTimeout( addDataListOptions.bind( datalistElm, query ), waitInterval );
+			break;
+		case "keyup":
+			if ( !( event.ctrlKey || event.altKey || event.metaKey ) ) {
+
+				// Backspace, Spacebar, a - z keys, 0 - 9 keys punctuation, and symbols
+				if ( which === 8 ||  which === 32 || ( which > 47 && which < 91 ) ||
+					( which > 95 && which < 112 ) || ( which > 159 && which < 177 ) ||
+					( which > 187 && which < 223 ) ) {
+
+					wait = setTimeout( addDataListOptions.bind( datalistElm, query ), waitInterval );
+				}
+			}
+		}
+	},
+
+	init = function( event ) {
+
+		var elm = wb.init( event, componentName, selector ),
+			inputSelector = "[list=" + event.target.id + "]";
+
+		if ( elm ) {
+			Modernizr.addTest( "stringnormalize", "normalize" in String );
+
+			//
+			// Add the trigger to load the JSON on when those input get focus.
+			// This avoid to download the JSON when it is not needed by the input
+			//
+			$document.one( "focus", inputSelector, inputFocus );
+
+			// Refresh the suggestion option based from user input if there is a limit set
+			if ( elm.dataset.wbLimit || elm.dataset.wbFilterType ) {
+				$document.on( "change keyup", inputSelector, inputChange );
+			}
+
+			// Initialization has completed
+			wb.ready( $( elm ), componentName );
+		}
+	};
+
+// Bind the init event of the plugin
+$document.on( "timerpoke.wb " + initEvent + " " + jsonFetched, selector, function( event ) {
+
+	var eventTarget = event.target;
+
+	if ( event.currentTarget === eventTarget ) {
+
+		switch ( event.type ) {
+		case "timerpoke":
+		case "wb-init":
+			init( event );
+			break;
+		case "json-fetched":
+			initSuggestion.call( eventTarget, event.fetch.response );
+			break;
+		}
+	}
+	return true;
+} );
+
+// Add the timer poke to initialize the plugin
+wb.add( selector );
+
+} )( jQuery, document, wb );
+
 /**
  * @title WET-BOEW URL mapping
  * @overview Execute pre-configured action based on url query string
@@ -4534,6 +4830,87 @@ $document.on( doMappingEvent, selector, function( event ) {
 		}
 	}
 } );
+
+// Bind the init event of the plugin
+$document.on( "timerpoke.wb " + initEvent, selector, init );
+
+// Add the timer poke to initialize the plugin
+wb.add( selector );
+
+} )( jQuery, window, wb );
+
+/**
+ * @title WB5 Click postback adapter
+ * @overview WB5 Click postback adapter toward wb-postback plugin
+ * @license wet-boew.github.io/wet-boew/License-en.html / wet-boew.github.io/wet-boew/Licence-fr.html
+ * @author @duboisp
+ */
+( function( $, window, wb ) {
+"use strict";
+
+/*
+ * Variable and function definitions.
+ * These are global to the plugin - meaning that they will be initialized once per page,
+ * not once per instance of plugin on the page. So, this is a good place to define
+ * variables that are common to all instances of the plugin on a page.
+ */
+var componentName = "adapter-wb5-click",
+	selector = "[data-wb5-click][data-toggle]",
+	initEvent = "wb-init." + componentName,
+	wbPostbackClass = "wb-postback",
+	$document = wb.doc,
+
+	/**
+	 * @method init
+	 * @param {jQuery Event} event Event that triggered the function call
+	 */
+	init = function( event ) {
+
+		// Start initialization
+		// returns DOM object = proceed with init
+		// returns undefined = do not proceed with init (e.g., already initialized)
+		var elm = wb.init( event, componentName, selector ),
+			$elm;
+
+		if ( elm ) {
+			$elm = $( elm );
+
+			// Extract info from "wb5-click" and "wb-toggle"
+			var command = $elm.data( "wb5-click" ).split( "@" ),
+				action = command[ 0 ],
+				cmdSelector = command[ 1 ],
+				$webForm = $( cmdSelector ),
+				dtToggle = wb.getData( $elm, "toggle" );
+
+			// Abort if not postback or Selector is not a form
+			if ( action !== "postback" || $webForm[ 0 ].nodeName !== "FORM" || !dtToggle.selector ) {
+
+				console.log( "Init failed for adapter wb5 click" );
+				wb.ready( $elm, componentName );
+				return;
+			}
+
+			// Implement the wb-postback into the form
+			$webForm.addClass( wbPostbackClass );
+			$webForm.attr( "data-" + wbPostbackClass,  JSON.stringify( { success: dtToggle.selector, failure: dtToggle.selector } ) );
+			$webForm.parent().removeClass( "gc-rprt-prblm-tggl" ); // Workaround to make wb-postback work for the Report a problem use case.
+
+			// Remove wb5-click and wb-toggle feature on the button
+			$elm
+				.removeAttr( "data-wb5-click" )
+				.removeAttr( "toggle" )
+				.removeAttr( "data-toggle" )
+				.removeAttr( "aria-controls" )
+				.removeClass( "wb-toggle" );
+
+
+			// Initiate the wb-postback plugin
+			$webForm.trigger( "wb-init." + wbPostbackClass );
+
+			// Let report the adapter is now ready
+			wb.ready( $elm, componentName );
+		}
+	};
 
 // Bind the init event of the plugin
 $document.on( "timerpoke.wb " + initEvent, selector, init );
@@ -4844,7 +5221,6 @@ function keycode( code ) {
 	if ( code === 38 ) { //up arrow
 		return "up";
 	}
-
 
 	return false;
 }
