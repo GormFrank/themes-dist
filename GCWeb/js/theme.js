@@ -2531,7 +2531,7 @@ var componentName = "wb-fieldflow",
 					formElm = formElm.parentElement;
 				}
 				$( formElm.parentElement ).addClass( formComponent );
-			} else if ( config.inline ) {
+			} else if ( config.inline && !config.renderas ) {
 				stdOut = "<div class='wb-frmvld " + formComponent + "'><form><div class='input-group'><div id='" + bodyID + "'>";
 				stdOut = stdOut + "</div><span class='input-group-btn'><input type=\"submit\" value=\"" + i18n.btn + "\" class=\"btn btn-default mrgn-bttm-md\" /></span></div> </form></div>";
 			} else {
@@ -2565,6 +2565,7 @@ var componentName = "wb-fieldflow",
 			}
 
 			config.inline = !!config.inline;
+			config.gcChckbxrdio = !!config.gcChckbxrdio;
 
 			// Trigger the drop down loading
 			$elm.trigger( config.srctype + "." + drawEvent, config );
@@ -2858,7 +2859,8 @@ var componentName = "wb-fieldflow",
 				defaultselectedlabel: defaultSelectedLabel,
 				lblselector: lblselector,
 				items: itemsToCreate,
-				inline: data.inline
+				inline: data.inline,
+				gcChckbxrdio: data.gcChckbxrdio
 			} );
 
 		}
@@ -2925,7 +2927,8 @@ var componentName = "wb-fieldflow",
 				required: !data.isoptional,
 				noreqlabel: data.noreqlabel,
 				items: $items,
-				inline: data.inline
+				inline: data.inline,
+				gcChckbxrdio: data.gcChckbxrdio
 			} );
 		}
 	},
@@ -3045,8 +3048,9 @@ var componentName = "wb-fieldflow",
 			radCheckOut = "",
 			typeRadCheck = data.typeRadCheck,
 			isInline = data.inline,
+			isGcChckbxrdio = data.gcChckbxrdio,
 			fieldName = basenameInput + ctrlID,
-			i, i_len, j, j_len, cur_itm;
+			i, i_len, j, j_len, cur_itm, in_ul;
 
 		if ( attributes && typeof attributes === "object" ) {
 			for ( i in attributes ) {
@@ -3056,6 +3060,15 @@ var componentName = "wb-fieldflow",
 			}
 		}
 		$out = $( fieldsetHTML + "></fieldset>" );
+
+		if ( isInline ) {
+			$out.addClass( "form-inline" );
+		}
+
+		// Apply GC Checkbox radio pattern if gcChckbxrdio is provided
+		if ( isGcChckbxrdio ) {
+			$out.addClass( "gc-chckbxrdio" );
+		}
 
 		// Create the legend
 		if ( isReq && useReqLabel ) {
@@ -3074,22 +3087,45 @@ var componentName = "wb-fieldflow",
 			$prevContent = $tmpLabel.prevAll();
 		}
 
+		// Put checkboxes in a list if not inline
+		if ( isGcChckbxrdio && !isInline ) {
+			in_ul = "closed";
+		}
+
 		// Create radio
 		for ( i = 0, i_len = items.length; i !== i_len; i += 1 ) {
 			cur_itm = items[ i ];
 
 			if ( !cur_itm.group ) {
-				radCheckOut += buildCheckboxRadio( cur_itm, fieldName, typeRadCheck, isInline, isReq );
+
+				if ( i === 0 && in_ul === "closed" ) {
+					radCheckOut += "<ul class='list-unstyled lst-spcd-2'>";
+					in_ul = "open";
+				}
+				radCheckOut += buildCheckboxRadio( cur_itm, fieldName, typeRadCheck, isInline, isGcChckbxrdio, isReq );
 			} else {
 
 				// We have a group of sub-items, the cur_itm are a group
+				if ( in_ul === "open" ) {
+					radCheckOut += "</ul>";
+					in_ul = "closed";
+				}
 				radCheckOut += "<p>" + cur_itm.label + "</p>";
+				if ( in_ul === "closed" ) {
+					radCheckOut += "<ul class='list-unstyled lst-spcd-2'>";
+					in_ul = "open";
+				}
 				j_len = cur_itm.group.length;
 				for ( j = 0; j !== j_len; j += 1 ) {
-					radCheckOut += buildCheckboxRadio( cur_itm.group[ j ], fieldName, typeRadCheck, isInline, isReq );
+					radCheckOut += buildCheckboxRadio( cur_itm.group[ j ], fieldName, typeRadCheck, isInline, isGcChckbxrdio, isReq );
 				}
 			}
 		}
+
+		if ( in_ul === "open" ) {
+			radCheckOut += "</ul>";
+		}
+
 		$out.append( radCheckOut );
 		$( "#" + bodyId ).append( $out );
 		if ( $prevContent ) {
@@ -3218,28 +3254,32 @@ var componentName = "wb-fieldflow",
 
 		return out;
 	},
-	buildCheckboxRadio = function( data, fieldName, inputType, isInline, isReq ) {
-		var label = data.label,
-			fieldID = wb.getId(),
-			inline = isInline ? "-inline" : "",
-			out = " for='" + fieldID + "'><input id='" + fieldID + "' type='" + inputType + "' name='" + fieldName + "' value='" + label + "'";
-
-		if ( isInline ) {
-			out = "<label class='" + inputType + inline + "'" + out;
-		} else {
-			out = "<div class='" + inputType + "'><label" + out;
-		}
-
-		out += buildDataAttribute( data );
+	buildCheckboxRadio = function( data, fieldName, inputType, isInline, isGcChckbxrdio, isReq ) {
+		var fieldID = wb.getId(),
+			labelTxt = data.label,
+			label = "<label for='" + fieldID + "'>",
+			input = "<input id='" + fieldID + "' type='" + inputType + "' name='" + fieldName + "' value='" + labelTxt + "'" + buildDataAttribute( data ),
+			tag = !isInline && isGcChckbxrdio ? "li" : "div",
+			out = "<" + tag + " class='" + inputType;
 
 		if ( isReq ) {
-			out += " required='required'";
+			input += " required='required'";
 		}
-		out += " /> " + label + "</label>";
+		input += " />";
 
-		if ( !isInline ) {
-			out += "</div>";
+		if ( isInline ) {
+			out += " label-inline";
 		}
+		out += "'>";
+
+		// Implicit pattern only if not inline and not using GC Chckbxrdio
+		if ( !isInline && !isGcChckbxrdio ) {
+			out += label + input + " " + labelTxt;
+		} else {
+			out += input + label + labelTxt;
+		}
+
+		out += "</label>" + "</" + tag + ">";
 
 		return out;
 	};
